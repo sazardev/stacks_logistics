@@ -21,6 +21,17 @@ import '../../features/authentication/domain/use_cases/send_password_reset_email
 import '../../features/authentication/domain/use_cases/auth_state_changes_use_case.dart';
 import '../../features/authentication/presentation/blocs/auth_bloc.dart';
 
+// Map tracking imports
+import '../../features/map_tracking/data/repositories/map_tracking_repository_impl.dart';
+import '../../features/map_tracking/domain/repository_interfaces/map_tracking_repository.dart';
+import '../../features/map_tracking/domain/use_cases/get_container_markers_use_case.dart';
+import '../../features/map_tracking/domain/use_cases/get_current_location_use_case.dart';
+import '../../features/map_tracking/domain/use_cases/get_container_route_use_case.dart';
+import '../../features/map_tracking/presentation/blocs/map_tracking_bloc.dart';
+
+// Container tracking DI
+import '../../features/container_tracking/container_tracking_di.dart';
+
 /// Service locator instance
 final getIt = GetIt.instance;
 
@@ -33,6 +44,8 @@ class DependencyInjection {
     await _initNetworking();
     await _initFirebase();
     await _initAuthentication();
+    await ContainerTrackingDI.init(getIt);
+    await _initMapTracking();
     // Other feature-specific dependencies will be added later
   }
 
@@ -121,6 +134,34 @@ class DependencyInjection {
         getCurrentUserUseCase: getIt(),
         sendPasswordResetEmailUseCase: getIt(),
         authStateChangesUseCase: getIt(),
+      ),
+    );
+  }
+
+  /// Initializes map tracking dependencies
+  static Future<void> _initMapTracking() async {
+    // Repository
+    getIt.registerLazySingleton<MapTrackingRepository>(
+      () => MapTrackingRepositoryImpl(containerRepository: getIt()),
+    );
+
+    // Use cases
+    getIt.registerLazySingleton(
+      () => GetContainerMarkersUseCase(repository: getIt()),
+    );
+    getIt.registerLazySingleton(
+      () => GetCurrentLocationUseCase(repository: getIt()),
+    );
+    getIt.registerLazySingleton(
+      () => GetContainerRouteUseCase(repository: getIt()),
+    );
+
+    // BLoC
+    getIt.registerFactory(
+      () => MapTrackingBloc(
+        getContainerMarkersUseCase: getIt(),
+        getCurrentLocationUseCase: getIt(),
+        getContainerRouteUseCase: getIt(),
       ),
     );
   }

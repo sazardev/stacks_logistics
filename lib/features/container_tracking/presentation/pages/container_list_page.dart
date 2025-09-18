@@ -8,6 +8,8 @@ import '../blocs/container_tracking_state.dart';
 import '../widgets/container_card.dart';
 import '../widgets/container_search_bar.dart';
 import '../widgets/container_filter_chips.dart';
+import '../../../map_tracking/presentation/pages/map_tracking_page.dart';
+import '../../../map_tracking/presentation/blocs/map_tracking_bloc.dart';
 
 /// Page displaying a list of containers with search and filter capabilities
 class ContainerListPage extends StatelessWidget {
@@ -33,6 +35,20 @@ class ContainerListView extends StatelessWidget {
         title: const Text('Containers'),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => getIt<MapTrackingBloc>(),
+                    child: const MapTrackingPage(),
+                  ),
+                ),
+              );
+            },
+            tooltip: 'Map View',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {

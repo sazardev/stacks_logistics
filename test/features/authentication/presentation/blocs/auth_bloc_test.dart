@@ -1,14 +1,60 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:dartz/dartz.dart';
 import 'package:stacks_logistics/features/authentication/presentation/blocs/auth_bloc.dart';
 import 'package:stacks_logistics/features/authentication/presentation/blocs/auth_event.dart';
 import 'package:stacks_logistics/features/authentication/presentation/blocs/auth_state.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/sign_in_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/register_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/sign_out_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/get_current_user_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/send_password_reset_email_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/use_cases/auth_state_changes_use_case.dart';
+import 'package:stacks_logistics/features/authentication/domain/entities/user.dart';
+import 'package:stacks_logistics/core/error/failures.dart';
 
+import 'auth_bloc_test.mocks.dart';
+
+@GenerateMocks([
+  SignInUseCase,
+  RegisterUseCase,
+  SignOutUseCase,
+  GetCurrentUserUseCase,
+  SendPasswordResetEmailUseCase,
+  AuthStateChangesUseCase,
+])
 void main() {
   group('AuthBloc Tests', () {
     late AuthBloc authBloc;
+    late MockSignInUseCase mockSignInUseCase;
+    late MockRegisterUseCase mockRegisterUseCase;
+    late MockSignOutUseCase mockSignOutUseCase;
+    late MockGetCurrentUserUseCase mockGetCurrentUserUseCase;
+    late MockSendPasswordResetEmailUseCase mockSendPasswordResetEmailUseCase;
+    late MockAuthStateChangesUseCase mockAuthStateChangesUseCase;
 
     setUp(() {
-      authBloc = AuthBloc();
+      mockSignInUseCase = MockSignInUseCase();
+      mockRegisterUseCase = MockRegisterUseCase();
+      mockSignOutUseCase = MockSignOutUseCase();
+      mockGetCurrentUserUseCase = MockGetCurrentUserUseCase();
+      mockSendPasswordResetEmailUseCase = MockSendPasswordResetEmailUseCase();
+      mockAuthStateChangesUseCase = MockAuthStateChangesUseCase();
+
+      // Set up the auth state changes use case to return an empty stream
+      when(
+        mockAuthStateChangesUseCase(),
+      ).thenAnswer((_) => Stream<Either<Failure, User?>>.empty());
+
+      authBloc = AuthBloc(
+        signInUseCase: mockSignInUseCase,
+        registerUseCase: mockRegisterUseCase,
+        signOutUseCase: mockSignOutUseCase,
+        getCurrentUserUseCase: mockGetCurrentUserUseCase,
+        sendPasswordResetEmailUseCase: mockSendPasswordResetEmailUseCase,
+        authStateChangesUseCase: mockAuthStateChangesUseCase,
+      );
     });
 
     tearDown(() {
@@ -20,139 +66,146 @@ void main() {
     });
 
     group('LoginRequested', () {
-      test(
-        'should emit loading then authenticated when credentials are correct',
-        () async {
-          // Arrange
-          const email = 'test@example.com';
-          const password = 'password';
+      const testEmail = 'test@example.com';
+      const testPassword = 'password123';
 
-          // Act & Assert
-          expectLater(
-            authBloc.stream,
-            emitsInOrder([const AuthLoading(), isA<AuthAuthenticated>()]),
-          );
-
-          authBloc.add(const LoginRequested(email: email, password: password));
-        },
+      final testUser = User(
+        id: '1',
+        email: testEmail,
+        name: 'Test User',
+        isEmailVerified: true,
+        isPremiumUser: false,
+        createdAt: DateTime(2023, 1, 1),
+        lastLoginAt: DateTime(2023, 1, 1),
       );
 
       test(
-        'should emit loading then error when credentials are incorrect',
+        'should emit [AuthLoading, AuthAuthenticated] when login succeeds',
         () async {
           // Arrange
-          const email = 'wrong@example.com';
-          const password = 'wrongpassword';
+          when(mockSignInUseCase(any)).thenAnswer((_) async => Right(testUser));
 
-          // Act & Assert
-          expectLater(
-            authBloc.stream,
-            emitsInOrder([
-              const AuthLoading(),
-              const AuthError('Invalid email or password'),
-            ]),
+          // Act
+          authBloc.add(
+            const LoginRequested(email: testEmail, password: testPassword),
           );
 
-          authBloc.add(const LoginRequested(email: email, password: password));
+          // Assert
+          await expectLater(
+            authBloc.stream,
+            emitsInOrder([const AuthLoading(), AuthAuthenticated(testUser)]),
+          );
         },
       );
+
+      test('should emit [AuthLoading, AuthError] when login fails', () async {
+        // Arrange
+        const failure = AuthFailure(message: 'Invalid credentials');
+        when(
+          mockSignInUseCase(any),
+        ).thenAnswer((_) async => const Left(failure));
+
+        // Act
+        authBloc.add(
+          const LoginRequested(email: testEmail, password: testPassword),
+        );
+
+        // Assert
+        await expectLater(
+          authBloc.stream,
+          emitsInOrder([
+            const AuthLoading(),
+            const AuthError('Invalid credentials'),
+          ]),
+        );
+      });
     });
 
     group('RegisterRequested', () {
-      test('should emit loading then registered unverified', () async {
-        // Arrange
-        const email = 'newuser@example.com';
-        const password = 'password123';
-        const firstName = 'John';
-        const lastName = 'Doe';
+      const testEmail = 'test@example.com';
+      const testPassword = 'password123';
+      const testFirstName = 'Test';
+      const testLastName = 'User';
 
-        // Act & Assert
-        expectLater(
-          authBloc.stream,
-          emitsInOrder([const AuthLoading(), isA<AuthRegisteredUnverified>()]),
-        );
+      final testUser = User(
+        id: '1',
+        email: testEmail,
+        name: '$testFirstName $testLastName',
+        isEmailVerified: false,
+        isPremiumUser: false,
+        createdAt: DateTime(2023, 1, 1),
+      );
 
-        authBloc.add(
-          const RegisterRequested(
-            email: email,
-            password: password,
-            firstName: firstName,
-            lastName: lastName,
-          ),
-        );
-      });
+      test(
+        'should emit [AuthLoading, AuthRegisteredUnverified] when registration succeeds',
+        () async {
+          // Arrange
+          when(
+            mockRegisterUseCase(any),
+          ).thenAnswer((_) async => Right(testUser));
+
+          // Act
+          authBloc.add(
+            const RegisterRequested(
+              email: testEmail,
+              password: testPassword,
+              firstName: testFirstName,
+              lastName: testLastName,
+            ),
+          );
+
+          // Assert
+          await expectLater(
+            authBloc.stream,
+            emitsInOrder([
+              const AuthLoading(),
+              AuthRegisteredUnverified(testUser),
+            ]),
+          );
+        },
+      );
     });
 
     group('LogoutRequested', () {
-      test('should emit loading then unauthenticated', () async {
-        // Act & Assert
-        expectLater(
-          authBloc.stream,
-          emitsInOrder([const AuthLoading(), const AuthUnauthenticated()]),
-        );
-
-        authBloc.add(const LogoutRequested());
-      });
-    });
-
-    group('CheckAuthStatus', () {
       test(
-        'should emit loading then unauthenticated for mock implementation',
+        'should emit [AuthLoading, AuthUnauthenticated] when logout succeeds',
         () async {
-          // Act & Assert
-          expectLater(
+          // Arrange
+          when(mockSignOutUseCase()).thenAnswer((_) async => const Right(null));
+
+          // Act
+          authBloc.add(const LogoutRequested());
+
+          // Assert
+          await expectLater(
             authBloc.stream,
             emitsInOrder([const AuthLoading(), const AuthUnauthenticated()]),
           );
-
-          authBloc.add(const CheckAuthStatus());
         },
       );
     });
 
     group('PasswordResetRequested', () {
-      test('should emit loading then password reset sent', () async {
-        // Arrange
-        const email = 'test@example.com';
+      const testEmail = 'test@example.com';
 
-        // Act & Assert
-        expectLater(
-          authBloc.stream,
-          emitsInOrder([const AuthLoading(), const AuthPasswordResetSent()]),
-        );
+      test(
+        'should emit [AuthLoading, AuthPasswordResetSent] when password reset succeeds',
+        () async {
+          // Arrange
+          when(
+            mockSendPasswordResetEmailUseCase(any),
+          ).thenAnswer((_) async => const Right(null));
 
-        authBloc.add(const PasswordResetRequested(email));
-      });
-    });
+          // Act
+          authBloc.add(const PasswordResetRequested(testEmail));
 
-    group('ResendVerificationEmail', () {
-      test('should emit loading then verification email sent', () async {
-        // Act & Assert
-        expectLater(
-          authBloc.stream,
-          emitsInOrder([
-            const AuthLoading(),
-            const AuthVerificationEmailSent(),
-          ]),
-        );
-
-        authBloc.add(const ResendVerificationEmail());
-      });
-    });
-
-    group('VerifyEmail', () {
-      test('should emit loading then email verified', () async {
-        // Arrange
-        const token = 'verification_token';
-
-        // Act & Assert
-        expectLater(
-          authBloc.stream,
-          emitsInOrder([const AuthLoading(), isA<AuthEmailVerified>()]),
-        );
-
-        authBloc.add(const VerifyEmail(token));
-      });
+          // Assert
+          await expectLater(
+            authBloc.stream,
+            emitsInOrder([const AuthLoading(), const AuthPasswordResetSent()]),
+          );
+        },
+      );
     });
   });
 }

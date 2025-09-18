@@ -3,7 +3,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/themes/app_theme.dart';
 import 'core/config/firebase_config.dart';
-import 'features/container_tracking/container_tracking_di.dart';
 import 'features/authentication/presentation/widgets/auth_wrapper.dart';
 
 void main() async {
@@ -20,9 +19,6 @@ void main() async {
 
   // Initialize core dependencies
   await DependencyInjection.init();
-
-  // Initialize feature dependencies
-  await ContainerTrackingDI.init(getIt);
 
   runApp(const StackLogisticsApp());
 }
