@@ -27,7 +27,7 @@ class ContainerTrackingDI {
     await _initHive();
 
     // Register data sources
-    _registerDataSources(serviceLocator);
+    await _registerDataSources(serviceLocator);
 
     // Register repositories
     _registerRepositories(serviceLocator);
@@ -56,7 +56,7 @@ class ContainerTrackingDI {
   }
 
   /// Register data sources
-  static void _registerDataSources(GetIt sl) {
+  static Future<void> _registerDataSources(GetIt sl) async {
     // External dependencies
     sl.registerLazySingleton<FirebaseFirestore>(
       () => FirebaseFirestore.instance,
@@ -64,21 +64,20 @@ class ContainerTrackingDI {
     sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
     sl.registerLazySingleton<Connectivity>(() => Connectivity());
 
-    // Hive boxes - these should be opened in the main app initialization
-    sl.registerLazySingletonAsync<Box<ContainerModel>>(
-      () async => await Hive.openBox<ContainerModel>('containers'),
-    );
-    sl.registerLazySingletonAsync<Box<dynamic>>(
-      () async => await Hive.openBox('settings'),
-    );
+    // Open Hive boxes first
+    final containerBox = await Hive.openBox<ContainerModel>('containers');
+    final settingsBox = await Hive.openBox('settings');
+
+    // Register the opened boxes
+    sl.registerLazySingleton<Box<ContainerModel>>(() => containerBox);
+    sl.registerLazySingleton<Box<dynamic>>(() => settingsBox);
 
     // Local data source
-    sl.registerLazySingletonAsync<ContainerLocalDataSource>(
-      () async => ContainerLocalDataSourceImpl(
+    sl.registerLazySingleton<ContainerLocalDataSource>(
+      () => ContainerLocalDataSourceImpl(
         containerBox: sl<Box<ContainerModel>>(),
         settingsBox: sl<Box<dynamic>>(),
       ),
-      dependsOn: [Box<ContainerModel>, Box<dynamic>],
     );
 
     // Remote data source
@@ -92,82 +91,50 @@ class ContainerTrackingDI {
 
   /// Register repositories
   static void _registerRepositories(GetIt sl) {
-    sl.registerLazySingletonAsync<ContainerRepository>(
-      () async => ContainerRepositoryImpl(
+    sl.registerLazySingleton<ContainerRepository>(
+      () => ContainerRepositoryImpl(
         localDataSource: sl<ContainerLocalDataSource>(),
         remoteDataSource: sl<ContainerRemoteDataSource>(),
         connectivity: sl<Connectivity>(),
       ),
-      dependsOn: [ContainerLocalDataSource],
     );
   }
 
   /// Register use cases
   static void _registerUseCases(GetIt sl) {
-    sl.registerLazySingletonAsync<GetAllContainers>(
-      () async => GetAllContainers(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
+    sl.registerLazySingleton<GetAllContainers>(
+      () => GetAllContainers(sl<ContainerRepository>()),
     );
 
-    sl.registerLazySingletonAsync<GetContainerById>(
-      () async => GetContainerById(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
+    sl.registerLazySingleton<GetContainerById>(
+      () => GetContainerById(sl<ContainerRepository>()),
     );
 
-    sl.registerLazySingletonAsync<SearchContainers>(
-      () async => SearchContainers(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
+    sl.registerLazySingleton<SearchContainers>(
+      () => SearchContainers(sl<ContainerRepository>()),
     );
 
-    sl.registerLazySingletonAsync<CreateContainer>(
-      () async => CreateContainer(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
+    sl.registerLazySingleton<CreateContainer>(
+      () => CreateContainer(sl<ContainerRepository>()),
     );
 
-    sl.registerLazySingletonAsync<UpdateContainer>(
-      () async => UpdateContainer(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
-    );
-
-    sl.registerLazySingletonAsync<DeleteContainer>(
-      () async => DeleteContainer(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
-    );
-
-    sl.registerLazySingletonAsync<GetContainersByStatus>(
-      () async => GetContainersByStatus(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
-    );
-
-    sl.registerLazySingletonAsync<GetContainersByPriority>(
-      () async => GetContainersByPriority(sl<ContainerRepository>()),
-      dependsOn: [ContainerRepository],
-    );
+    // TODO: Add remaining use cases when they are implemented
+    // - UpdateContainer
+    // - DeleteContainer
+    // - GetContainersByStatus
+    // - GetContainersByPriority
   }
 
   /// Register BLoCs
   static void _registerBlocs(GetIt sl) {
-    sl.registerFactoryAsync<ContainerTrackingBloc>(
-      () async => ContainerTrackingBloc(
-        getAllContainers: sl<GetAllContainers>(),
-        getContainerById: sl<GetContainerById>(),
-        searchContainers: sl<SearchContainers>(),
-        createContainer: sl<CreateContainer>(),
-        updateContainer: sl<UpdateContainer>(),
-        deleteContainer: sl<DeleteContainer>(),
-        getContainersByStatus: sl<GetContainersByStatus>(),
-        getContainersByPriority: sl<GetContainersByPriority>(),
-      ),
-      dependsOn: [
-        GetAllContainers,
-        GetContainerById,
-        SearchContainers,
-        CreateContainer,
-        UpdateContainer,
-        DeleteContainer,
-        GetContainersByStatus,
-        GetContainersByPriority,
-      ],
-    );
+    // TODO: Register ContainerTrackingBloc when presentation layer is implemented
+    // sl.registerFactory<ContainerTrackingBloc>(
+    //   () => ContainerTrackingBloc(
+    //     getAllContainers: sl<GetAllContainers>(),
+    //     getContainerById: sl<GetContainerById>(),
+    //     searchContainers: sl<SearchContainers>(),
+    //     createContainer: sl<CreateContainer>(),
+    //   ),
+    // );
   }
 }
