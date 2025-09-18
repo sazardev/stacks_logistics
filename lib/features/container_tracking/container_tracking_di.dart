@@ -13,11 +13,11 @@ import 'domain/use_cases/get_all_containers.dart';
 import 'domain/use_cases/get_container_by_id.dart';
 import 'domain/use_cases/search_containers.dart';
 import 'domain/use_cases/create_container.dart';
-// import 'domain/use_cases/update_container.dart';
-// import 'domain/use_cases/delete_container.dart';
-// import 'domain/use_cases/get_containers_by_status.dart';
-// import 'domain/use_cases/get_containers_by_priority.dart';
-// import 'presentation/blocs/container_tracking_bloc.dart';
+import 'domain/use_cases/update_container.dart';
+import 'domain/use_cases/delete_container.dart';
+import 'domain/use_cases/get_containers_by_status.dart';
+import 'domain/use_cases/get_containers_by_priority.dart';
+import 'presentation/blocs/container_tracking_bloc.dart';
 
 /// Container tracking feature dependency injection setup
 class ContainerTrackingDI {
@@ -46,12 +46,10 @@ class ContainerTrackingDI {
       Hive.registerAdapter(ContainerModelAdapter());
     }
     if (!Hive.isAdapterRegistered(1)) {
-      // TODO: Register LocationModelAdapter when created
-      // Hive.registerAdapter(LocationModelAdapter());
+      Hive.registerAdapter(LocationModelAdapter());
     }
     if (!Hive.isAdapterRegistered(2)) {
-      // TODO: Register TrackingEntryModelAdapter when created
-      // Hive.registerAdapter(TrackingEntryModelAdapter());
+      Hive.registerAdapter(TrackingEntryModelAdapter());
     }
   }
 
@@ -118,23 +116,36 @@ class ContainerTrackingDI {
       () => CreateContainer(sl<ContainerRepository>()),
     );
 
-    // TODO: Add remaining use cases when they are implemented
-    // - UpdateContainer
-    // - DeleteContainer
-    // - GetContainersByStatus
-    // - GetContainersByPriority
+    sl.registerLazySingleton<UpdateContainer>(
+      () => UpdateContainer(sl<ContainerRepository>()),
+    );
+
+    sl.registerLazySingleton<DeleteContainer>(
+      () => DeleteContainer(sl<ContainerRepository>()),
+    );
+
+    sl.registerLazySingleton<GetContainersByStatus>(
+      () => GetContainersByStatus(sl<ContainerRepository>()),
+    );
+
+    sl.registerLazySingleton<GetContainersByPriority>(
+      () => GetContainersByPriority(sl<ContainerRepository>()),
+    );
   }
 
   /// Register BLoCs
   static void _registerBlocs(GetIt sl) {
-    // TODO: Register ContainerTrackingBloc when presentation layer is implemented
-    // sl.registerFactory<ContainerTrackingBloc>(
-    //   () => ContainerTrackingBloc(
-    //     getAllContainers: sl<GetAllContainers>(),
-    //     getContainerById: sl<GetContainerById>(),
-    //     searchContainers: sl<SearchContainers>(),
-    //     createContainer: sl<CreateContainer>(),
-    //   ),
-    // );
+    sl.registerFactory<ContainerTrackingBloc>(
+      () => ContainerTrackingBloc(
+        getAllContainers: sl<GetAllContainers>(),
+        getContainerById: sl<GetContainerById>(),
+        searchContainers: sl<SearchContainers>(),
+        getContainersByStatus: sl<GetContainersByStatus>(),
+        getContainersByPriority: sl<GetContainersByPriority>(),
+        createContainer: sl<CreateContainer>(),
+        updateContainer: sl<UpdateContainer>(),
+        deleteContainer: sl<DeleteContainer>(),
+      ),
+    );
   }
 }

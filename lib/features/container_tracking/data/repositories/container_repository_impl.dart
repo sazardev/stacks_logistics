@@ -10,6 +10,7 @@ import '../models/container_model.dart';
 import '../exceptions/container_exceptions.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/services/data_seeding_service.dart';
 
 /// Implementation of ContainerRepository that supports both local and remote data sources
 /// with automatic synchronization logic
@@ -40,6 +41,16 @@ class ContainerRepositoryImpl implements ContainerRepository {
       final localEntities = localContainers
           .map((model) => model.toEntity())
           .toList();
+
+      // If local cache is empty, seed with sample data for demo purposes
+      if (localEntities.isEmpty) {
+        final sampleContainers = DataSeedingService.generateSampleContainers();
+        final sampleModels = sampleContainers
+            .map((container) => ContainerModel.fromEntity(container))
+            .toList();
+        await localDataSource.cacheContainers(sampleModels);
+        return Right(sampleContainers);
+      }
 
       // If we have network connectivity, try to sync with remote
       if (await _hasConnection) {
