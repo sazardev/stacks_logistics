@@ -1,0 +1,67 @@
+name: stacks_logistics
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  # Core dependencies
+  flutter:
+    sdk: flutter
+  
+  # Functional programming and error handling
+  dartz: ^0.10.1
+  
+  # State management
+  flutter_bloc: ^9.1.1
+  
+  # Networking
+  dio: ^5.9.0
+  
+  # UI and design
+  google_fonts: ^6.3.1
+  
+  # Internationalization
+  intl: ^0.20.1
+  
+  # Local storage
+  shared_preferences: ^2.5.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Dependency injection
+  get_it: ^8.2.0
+  
+  # Value equality
+  equatable: ^2.0.7
+  
+  # Firebase
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
+  cloud_firestore: ^6.0.1
+  firebase_storage: ^13.0.1
+  
+  # Routing
+  go_router: ^16.2.1
+  
+  # Path utilities
+  path_provider: ^2.1.5
+  
+  # Network connectivity
+  connectivity_plus: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # Build runner for code generation
+  build_runner: ^2.4.12
+  
+  # Hive code generation
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
