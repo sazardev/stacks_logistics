@@ -56,13 +56,6 @@ class ContainerTrackingDI {
 
   /// Register data sources
   static Future<void> _registerDataSources(GetIt sl) async {
-    // External dependencies
-    sl.registerLazySingleton<FirebaseFirestore>(
-      () => FirebaseFirestore.instance,
-    );
-    sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
-    sl.registerLazySingleton<Connectivity>(() => Connectivity());
-
     // Open Hive boxes first
     final containerBox = await Hive.openBox<ContainerModel>('containers');
     final settingsBox = await Hive.openBox('settings');

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive/hive.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../network/network_config.dart';
 import '../network/network_info.dart';
@@ -96,6 +97,11 @@ class DependencyInjection {
     // Cloud Firestore
     getIt.registerLazySingleton<FirebaseFirestore>(
       () => FirebaseFirestore.instance,
+    );
+
+    // Firebase Messaging
+    getIt.registerLazySingleton<FirebaseMessaging>(
+      () => FirebaseMessaging.instance,
     );
   }
 
