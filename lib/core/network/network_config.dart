@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../constants/app_constants.dart';
 
 /// Network configuration and utilities
@@ -45,7 +46,7 @@ class NetworkConfig {
         },
         onError: (error, handler) {
           // Log error details
-          print('Network Error: ${error.message}');
+          debugPrint('Network Error: ${error.message}');
           handler.next(error);
         },
       ),
@@ -88,8 +89,9 @@ class NetworkUtils {
     if (limit != null) params['limit'] = limit;
     if (search != null && search.isNotEmpty) params['search'] = search;
     if (sortBy != null && sortBy.isNotEmpty) params['sortBy'] = sortBy;
-    if (sortOrder != null && sortOrder.isNotEmpty)
+    if (sortOrder != null && sortOrder.isNotEmpty) {
       params['sortOrder'] = sortOrder;
+    }
 
     if (filters != null) {
       params.addAll(filters);

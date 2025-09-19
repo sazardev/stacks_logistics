@@ -66,6 +66,24 @@ class ContainerCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                   const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      container.currentLocation.name,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  _buildPriorityChip(context),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.scale_outlined,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
                     '${container.weight} kg',
                     style: Theme.of(context).textTheme.bodySmall,

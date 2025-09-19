@@ -192,7 +192,7 @@ class AppTheme {
       // Navigation Bar Theme (Material 3)
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.navigationBar,
-        indicatorColor: AppColors.primary.withOpacity(0.12),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.12),
         labelTextStyle: WidgetStateTextStyle.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return AppTextStyles.navigationLabelSelected;
@@ -229,8 +229,8 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
         disabledColor: AppColors.buttonDisabled,
-        selectedColor: AppColors.primary.withOpacity(0.12),
-        secondarySelectedColor: AppColors.secondary.withOpacity(0.12),
+        selectedColor: AppColors.primary.withValues(alpha: 0.12),
+        secondarySelectedColor: AppColors.secondary.withValues(alpha: 0.12),
         padding: const EdgeInsets.symmetric(
           horizontal: AppConstants.smallPadding,
           vertical: 4,
@@ -284,7 +284,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.primary.withOpacity(0.5);
+            return AppColors.primary.withValues(alpha: 0.5);
           }
           return AppColors.divider;
         }),
@@ -317,7 +317,7 @@ class AppTheme {
         activeTrackColor: AppColors.primary,
         inactiveTrackColor: AppColors.divider,
         thumbColor: AppColors.primary,
-        overlayColor: AppColors.primary.withOpacity(0.12),
+        overlayColor: AppColors.primary.withValues(alpha: 0.12),
         valueIndicatorColor: AppColors.primary,
         valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
           color: AppColors.textOnPrimary,
