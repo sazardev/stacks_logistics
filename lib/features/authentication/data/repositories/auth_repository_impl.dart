@@ -3,7 +3,6 @@ import '../../domain/entities/user.dart';
 import '../../domain/repository_interfaces/auth_repository.dart';
 import '../data_sources/auth_remote_data_source.dart';
 import '../data_sources/auth_local_data_source.dart';
-import '../models/user_model.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';

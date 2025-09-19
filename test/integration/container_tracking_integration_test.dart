@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:dartz/dartz.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'package:stacks_logistics/features/container_tracking/data/repositories/container_repository_impl.dart';
@@ -11,7 +10,6 @@ import 'package:stacks_logistics/features/container_tracking/data/models/contain
 import 'package:stacks_logistics/features/container_tracking/domain/entities/container.dart';
 import 'package:stacks_logistics/core/services/container_notification_service.dart';
 import 'package:stacks_logistics/features/notifications/domain/repository_interfaces/notification_repository.dart';
-import 'package:stacks_logistics/features/notifications/domain/entities/app_notification.dart';
 
 @GenerateMocks([
   ContainerLocalDataSource,

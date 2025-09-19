@@ -61,6 +61,10 @@ dependencies:
   location: ^8.0.1
   geocoding: ^2.2.1
   geolocator: ^12.0.0
+  
+  # Barcode/QR Code scanning
+  mobile_scanner: ^5.0.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

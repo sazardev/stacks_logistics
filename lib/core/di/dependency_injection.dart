@@ -8,6 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../network/network_config.dart';
 import '../network/network_info.dart';
 import 'container_notification_di.dart';
+import '../../features/barcode_scanner/barcode_scanner_di.dart';
 
 // Authentication imports
 import '../../features/authentication/data/data_sources/auth_remote_data_source.dart';
@@ -52,6 +53,7 @@ class DependencyInjection {
     await _initMapTracking();
     await NotificationDI.init(getIt);
     ContainerNotificationDI.init();
+    await initBarcodeScannerDependencies(getIt);
     // Other feature-specific dependencies will be added later
   }
 

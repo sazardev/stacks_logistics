@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import '../../../container_tracking/domain/entities/container.dart';
-import '../../domain/entities/map_marker.dart';
 
 /// Events for map tracking BLoC
 abstract class MapTrackingEvent extends Equatable {

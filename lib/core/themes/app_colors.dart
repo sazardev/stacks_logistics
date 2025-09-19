@@ -128,7 +128,7 @@ class AppColors {
 
   /// Returns a color with the specified opacity
   static Color withOpacity(Color color, double opacity) {
-    return color.withOpacity(opacity);
+    return color.withValues(alpha: opacity);
   }
 
   /// Returns a color based on container status
@@ -177,8 +177,6 @@ class AppColors {
         onSecondary: textOnSecondary,
         surface: surface,
         onSurface: textOnSurface,
-        background: background,
-        onBackground: textPrimary,
         error: error,
         onError: textOnPrimary,
       );
@@ -190,8 +188,6 @@ class AppColors {
         onSecondary: textPrimary,
         surface: const Color(0xFF121212),
         onSurface: Colors.white,
-        background: Colors.black,
-        onBackground: Colors.white,
         error: errorLight,
         onError: Colors.white,
       );

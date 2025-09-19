@@ -10,23 +10,35 @@ import '../widgets/container_search_bar.dart';
 import '../widgets/container_filter_chips.dart';
 import '../../../map_tracking/presentation/pages/map_tracking_page.dart';
 import '../../../map_tracking/presentation/blocs/map_tracking_bloc.dart';
+import '../../../barcode_scanner/presentation/pages/barcode_scanner_page.dart';
 
 /// Page displaying a list of containers with search and filter capabilities
 class ContainerListPage extends StatelessWidget {
-  const ContainerListPage({super.key});
+  const ContainerListPage({super.key, this.initialSearch});
+
+  final String? initialSearch;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          getIt<ContainerTrackingBloc>()..add(const LoadAllContainers()),
-      child: const ContainerListView(),
+      create: (context) {
+        final bloc = getIt<ContainerTrackingBloc>();
+        if (initialSearch != null && initialSearch!.isNotEmpty) {
+          bloc.add(SearchContainers(initialSearch!));
+        } else {
+          bloc.add(const LoadAllContainers());
+        }
+        return bloc;
+      },
+      child: ContainerListView(initialSearch: initialSearch),
     );
   }
 }
 
 class ContainerListView extends StatelessWidget {
-  const ContainerListView({super.key});
+  const ContainerListView({super.key, this.initialSearch});
+
+  final String? initialSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +60,17 @@ class ContainerListView extends StatelessWidget {
               );
             },
             tooltip: 'Map View',
+          ),
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const BarcodeScannerPage(),
+                ),
+              );
+            },
+            tooltip: 'Scan Code',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
