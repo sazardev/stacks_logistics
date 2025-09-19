@@ -18,6 +18,7 @@ import 'domain/use_cases/delete_container.dart';
 import 'domain/use_cases/get_containers_by_status.dart';
 import 'domain/use_cases/get_containers_by_priority.dart';
 import 'presentation/blocs/container_tracking_bloc.dart';
+import '../../core/services/container_notification_service.dart';
 
 /// Container tracking feature dependency injection setup
 class ContainerTrackingDI {
@@ -94,6 +95,9 @@ class ContainerTrackingDI {
         localDataSource: sl<ContainerLocalDataSource>(),
         remoteDataSource: sl<ContainerRemoteDataSource>(),
         connectivity: sl<Connectivity>(),
+        notificationService: sl.isRegistered<ContainerNotificationService>()
+            ? sl<ContainerNotificationService>()
+            : null,
       ),
     );
   }

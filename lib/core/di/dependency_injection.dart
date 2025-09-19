@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../network/network_config.dart';
 import '../network/network_info.dart';
+import 'container_notification_di.dart';
 
 // Authentication imports
 import '../../features/authentication/data/data_sources/auth_remote_data_source.dart';
@@ -32,6 +33,9 @@ import '../../features/map_tracking/presentation/blocs/map_tracking_bloc.dart';
 // Container tracking DI
 import '../../features/container_tracking/container_tracking_di.dart';
 
+// Notification DI
+import '../../features/notifications/notification_di.dart';
+
 /// Service locator instance
 final getIt = GetIt.instance;
 
@@ -46,6 +50,8 @@ class DependencyInjection {
     await _initAuthentication();
     await ContainerTrackingDI.init(getIt);
     await _initMapTracking();
+    await NotificationDI.init(getIt);
+    ContainerNotificationDI.init();
     // Other feature-specific dependencies will be added later
   }
 

@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/themes/app_theme.dart';
 import 'core/config/firebase_config.dart';
+import 'core/config/fcm_config.dart';
 import 'features/authentication/presentation/widgets/auth_wrapper.dart';
 
 void main() async {
@@ -19,6 +20,9 @@ void main() async {
 
   // Initialize core dependencies
   await DependencyInjection.init();
+
+  // Initialize Firebase Cloud Messaging
+  await FCMConfig.initialize();
 
   runApp(const StackLogisticsApp());
 }

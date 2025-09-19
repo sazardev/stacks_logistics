@@ -11,6 +11,7 @@ import '../exceptions/container_exceptions.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/data_seeding_service.dart';
+import '../../../../core/services/container_notification_service.dart';
 
 /// Implementation of ContainerRepository that supports both local and remote data sources
 /// with automatic synchronization logic
@@ -19,11 +20,13 @@ class ContainerRepositoryImpl implements ContainerRepository {
     required this.localDataSource,
     required this.remoteDataSource,
     required this.connectivity,
+    this.notificationService,
   });
 
   final ContainerLocalDataSource localDataSource;
   final ContainerRemoteDataSource remoteDataSource;
   final Connectivity connectivity;
+  final ContainerNotificationService? notificationService;
 
   /// Check if the device has internet connectivity
   Future<bool> get _hasConnection async {
@@ -194,6 +197,17 @@ class ContainerRepositoryImpl implements ContainerRepository {
     Container container,
   ) async {
     try {
+      // Get the current container state to compare for changes
+      Container? previousContainer;
+      try {
+        final localContainer = await localDataSource.getContainerById(
+          container.id,
+        );
+        previousContainer = localContainer?.toEntity();
+      } catch (e) {
+        // Container might not exist locally yet, which is fine
+      }
+
       // Update local cache first
       final model = ContainerModel.fromEntity(container);
       await localDataSource.cacheContainer(model);
@@ -208,6 +222,9 @@ class ContainerRepositoryImpl implements ContainerRepository {
           // TODO: Implement sync queue for failed operations
         }
       }
+
+      // Send notifications for relevant changes
+      await _handleContainerChangeNotifications(previousContainer, container);
 
       return Right(container);
     } catch (e) {
@@ -394,6 +411,65 @@ class ContainerRepositoryImpl implements ContainerRepository {
       return UnknownFailure(
         message: 'An unexpected error occurred: $exception',
       );
+    }
+  }
+
+  /// Handle container change notifications
+  Future<void> _handleContainerChangeNotifications(
+    Container? previousContainer,
+    Container currentContainer,
+  ) async {
+    if (notificationService == null) return;
+
+    try {
+      // Check for status changes
+      if (previousContainer != null &&
+          previousContainer.status != currentContainer.status) {
+        await notificationService!.onContainerStatusChanged(
+          container: currentContainer,
+          oldStatus: previousContainer.status,
+          newStatus: currentContainer.status,
+        );
+
+        // Check for specific status-based notifications
+        switch (currentContainer.status) {
+          case ContainerStatus.delivered:
+            await notificationService!.onContainerDelivered(
+              container: currentContainer,
+            );
+            break;
+          case ContainerStatus.delayed:
+            if (currentContainer.estimatedArrival != null) {
+              await notificationService!.onContainerDelayed(
+                container: currentContainer,
+                reason: 'Shipment delayed',
+                expectedDelivery: currentContainer.estimatedArrival!,
+              );
+            }
+            break;
+          case ContainerStatus.damaged:
+            await notificationService!.onContainerDamaged(
+              container: currentContainer,
+              damageDescription: 'Container damage detected',
+            );
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Check for location changes
+      if (previousContainer != null &&
+          previousContainer.currentLocation.fullAddress !=
+              currentContainer.currentLocation.fullAddress) {
+        await notificationService!.onContainerLocationUpdated(
+          container: currentContainer,
+          previousLocation: previousContainer.currentLocation.fullAddress,
+        );
+      }
+    } catch (e) {
+      // Log notification errors but don't fail the container update
+      print('Error sending container notifications: $e');
     }
   }
 }
