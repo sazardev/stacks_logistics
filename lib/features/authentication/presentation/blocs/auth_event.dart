@@ -105,3 +105,8 @@ class AuthStateError extends AuthEvent {
   @override
   List<Object?> get props => [message];
 }
+
+/// Event when user becomes unauthenticated (without triggering logout)
+class UserUnauthenticated extends AuthEvent {
+  const UserUnauthenticated();
+}

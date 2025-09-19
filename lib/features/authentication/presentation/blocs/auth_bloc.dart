@@ -27,6 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyEmail>(_onVerifyEmail);
     on<AuthStateChanged>(_onAuthStateChanged);
     on<AuthStateError>(_onAuthStateError);
+    on<UserUnauthenticated>(_onUserUnauthenticated);
 
     // Listen to auth state changes
     _authStateSubscription = authStateChangesUseCase.call().listen((result) {
@@ -34,7 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         (failure) => add(AuthStateError(failure.message)),
         (user) => user != null
             ? add(AuthStateChanged(user))
-            : add(const LogoutRequested()),
+            : add(const UserUnauthenticated()),
       );
     });
   }
@@ -178,6 +179,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthError(event.message));
+  }
+
+  Future<void> _onUserUnauthenticated(
+    UserUnauthenticated event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthUnauthenticated());
   }
 }
 
